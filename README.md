@@ -79,6 +79,7 @@ app.delete('/users/:id', (req, res) => {
 const port = 3000;
 app.listen(port, () => console.log(`Сервер запущен на порту ${port}`));
 
+//////////////////////////////
 
 
 const express = require('express');
@@ -137,4 +138,54 @@ app.listen(port, () => {
 });
 
 
+
+регистрация 
+
+const express = require('express');
+const mysql = require('mysql');
+const multer = require('multer');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+const app = express();
+const upload = multer();
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(upload.array());
+
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'your_username',
+  password: 'your_password',
+  database: 'your_database'
+});
+
+db.connect((err) => {
+  if (err) {
+    throw err;
+  }
+  console.log('Connected to the database.');
+});
+
+app.post('/register', (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  const sql = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+  const passwordHash = bcrypt.hashSync(password, 10); // Предполагается, что у вас установлена библиотека bcrypt
+
+  db.query(sql, [name, email, passwordHash], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error registering user.' });
+    }
+    res.status(201).json({ message: 'User registered successfully.' });
+  });
+});
+
+const port = 3000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
 ```
