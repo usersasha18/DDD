@@ -188,4 +188,35 @@ app.post('/register', (req, res) => {
 
 const port = 3000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
+
+
+////////////////////////////////
+
+
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required.' });
+  }
+
+  const sql = 'SELECT * FROM users WHERE email = ?';
+  db.query(sql, [email], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error checking credentials.' });
+    }
+
+    if (results.length === 0) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    const user = results[0];
+    if (!bcrypt.compareSync(password, user.password)) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    // Возвращаем сообщение об успешной авторизации
+    res.json({ message: 'Logged in successfully.', userId: user.id, redirectUrl: '/applications' });
+  });
+});
 ```
